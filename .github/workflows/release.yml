@@ -1,0 +1,33 @@
+# Publish @lexiprep/core to npm on a version tag, via npm Trusted Publishing (OIDC).
+# No NPM_TOKEN: GitHub Actions authenticates to npm with a short-lived OIDC token.
+# One-time setup on npmjs.com → package Settings → Trusted Publisher → GitHub Actions:
+#   organization: lexiprep   repository: lexiprep-core   workflow: release.yml
+# (case-sensitive). Release flow: bump "version" in package.json, commit, then
+#   git tag vX.Y.Z && git push origin vX.Y.Z
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write # required for npm OIDC trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      # No registry-url here on purpose: it writes an .npmrc expecting NODE_AUTH_TOKEN,
+      # which interferes with OIDC. npm defaults to registry.npmjs.org anyway.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      # Trusted publishing needs npm >= 11.5.1; the runner's bundled npm is older.
+      - run: npm install -g npm@latest
+      - run: npm publish --provenance

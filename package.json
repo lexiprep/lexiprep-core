@@ -1,6 +1,6 @@
 {
   "name": "@lexiprep/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Reusable pipeline: ebook (EPUB) -> clean text -> word tokens -> frequency list. Framework-agnostic, zero server/DB deps.",
   "keywords": [
     "epub",
@@ -15,7 +15,12 @@
   "author": "Valeriu Gutu <valeriu.manifest@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ORG/lexiprep-core.git"
+    "url": "git+https://github.com/lexiprep/lexiprep-core.git"
+  },
+  "homepage": "https://github.com/lexiprep/lexiprep-core#readme",
+  "bugs": "https://github.com/lexiprep/lexiprep-core/issues",
+  "publishConfig": {
+    "access": "public"
   },
   "type": "module",
   "exports": {
@@ -41,7 +46,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "analyze": "tsx src/cli.ts",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "fast-xml-parser": "^5.9.3",
