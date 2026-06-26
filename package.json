@@ -1,0 +1,58 @@
+{
+  "name": "@lexiprep/core",
+  "version": "0.0.0",
+  "description": "Reusable pipeline: ebook (EPUB) -> clean text -> word tokens -> frequency list. Framework-agnostic, zero server/DB deps.",
+  "keywords": [
+    "epub",
+    "ebook",
+    "tokenize",
+    "word-frequency",
+    "vocabulary",
+    "language-learning",
+    "nlp"
+  ],
+  "license": "MIT",
+  "author": "Valeriu Gutu <valeriu.manifest@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ORG/lexiprep-core.git"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "lexiprep-analyze": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "analyze": "tsx src/cli.ts",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.9.3",
+    "jszip": "^3.10.1",
+    "node-html-parser": "^8.0.3",
+    "wink-lemmatizer": "^3.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

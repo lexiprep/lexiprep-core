@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# local test ebooks — never commit (often copyrighted)
+*.epub
