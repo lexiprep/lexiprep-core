@@ -1,4 +1,5 @@
 import { tokenize, tokenizeWithContext } from "../text/tokenize.js";
+import { cleanText } from "../text/clean.js";
 import { splitSentences } from "../text/sentences.js";
 import { ENGLISH_STOPWORDS } from "../stopwords/english.js";
 import { lemmatize } from "../lemmatize/english.js";
@@ -70,8 +71,9 @@ export interface BookAnalysis {
 
 /** Count word frequencies in a block of text, sorted most-frequent first. */
 export function countWords(text: string, options: CountOptions = {}): WordFrequency[] {
-  const { counts, properStats } = tally(text, options);
-  const examples = options.captureExamples ? captureExamples(text) : undefined;
+  const cleaned = cleanText(text);
+  const { counts, properStats } = tally(cleaned, options);
+  const examples = options.captureExamples ? captureExamples(cleaned) : undefined;
   return tallyToFrequencies(counts, options.lemmatize, properStats, examples);
 }
 
@@ -88,10 +90,12 @@ export function analyzeBook(
   const from = clamp(options.from ?? 0, 0, last);
   const to = clamp(options.to ?? last, from, last);
 
-  const text = book.sections
-    .slice(from, to + 1)
-    .map((section) => section.text)
-    .join("\n\n");
+  const text = cleanText(
+    book.sections
+      .slice(from, to + 1)
+      .map((section) => section.text)
+      .join("\n\n"),
+  );
 
   const { counts, totalTokens, properStats } = tally(text, options);
   const examples = options.captureExamples ? captureExamples(text) : undefined;
