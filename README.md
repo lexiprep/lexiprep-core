@@ -1,8 +1,12 @@
 # @lexiprep/core
 
+[![npm](https://img.shields.io/npm/v/@lexiprep/core.svg)](https://www.npmjs.com/package/@lexiprep/core)
+[![license](https://img.shields.io/npm/l/@lexiprep/core.svg)](./LICENSE)
+
 Reusable, framework-agnostic pipeline that turns an **EPUB into a frequency-sorted
-word list** — the language-processing engine behind [lexiprep](https://github.com/ORG/lexiprep),
-usable on its own in any Node/TypeScript project.
+word list** — the language-processing engine behind [lexiprep](https://github.com/lexiprep/lexiprep),
+usable on its own in any Node/TypeScript project. Published on npm as
+[`@lexiprep/core`](https://www.npmjs.com/package/@lexiprep/core).
 
 Pure TypeScript, no server or database dependencies. Runs locally, in a worker, in
 tests, or (via `jszip`) potentially in the browser.
