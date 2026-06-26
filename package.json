@@ -1,6 +1,6 @@
 {
   "name": "@lexiprep/core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Reusable pipeline: ebook (EPUB/PDF) -> clean text -> word tokens -> frequency list. Framework-agnostic, zero server/DB deps.",
   "keywords": [
     "epub",
