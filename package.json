@@ -1,9 +1,10 @@
 {
   "name": "@lexiprep/core",
-  "version": "0.1.2",
-  "description": "Reusable pipeline: ebook (EPUB) -> clean text -> word tokens -> frequency list. Framework-agnostic, zero server/DB deps.",
+  "version": "0.2.0",
+  "description": "Reusable pipeline: ebook (EPUB/PDF) -> clean text -> word tokens -> frequency list. Framework-agnostic, zero server/DB deps.",
   "keywords": [
     "epub",
+    "pdf",
     "ebook",
     "tokenize",
     "word-frequency",
@@ -53,10 +54,12 @@
     "fast-xml-parser": "^5.9.3",
     "jszip": "^3.10.1",
     "node-html-parser": "^8.0.3",
+    "unpdf": "^1.6.2",
     "wink-lemmatizer": "^3.0.4"
   },
   "devDependencies": {
     "@types/node": "^26.0.1",
+    "pdf-lib": "^1.17.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"

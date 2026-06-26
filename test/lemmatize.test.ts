@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { lemmatize } from "../src/lemmatize/english.js";
 import { countWords, analyzeBook } from "../src/analyze/wordCount.js";
-import type { EpubBook } from "../src/epub/types.js";
+import type { Book } from "../src/types.js";
 
 describe("lemmatize", () => {
   it("reduces regular noun plurals and verb/adjective inflections", () => {
@@ -33,9 +33,9 @@ describe("lemmatize option in counting", () => {
   });
 
   it("analyzeBook attaches lemmas when lemmatize is set", () => {
-    const book: EpubBook = {
+    const book: Book = {
       metadata: { title: "T", author: "A", language: "en" },
-      chapters: [{ id: "c0", href: "c0.xhtml", order: 0, text: "wolves ran" }],
+      sections: [{ id: "c0", href: "c0.xhtml", order: 0, text: "wolves ran" }],
     };
     const byWord = Object.fromEntries(
       analyzeBook(book, { lemmatize: true }).frequencies.map((f) => [f.word, f.lemma]),

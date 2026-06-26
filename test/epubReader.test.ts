@@ -22,9 +22,9 @@ describe("readEpub", () => {
       author: "Jane Doe",
       language: "en",
     });
-    expect(book.chapters.map((c) => c.order)).toEqual([0, 1]);
-    expect(book.chapters[0]?.text).toContain("Hello world");
-    expect(book.chapters[1]?.text).toContain("Goodbye world");
+    expect(book.sections.map((c) => c.order)).toEqual([0, 1]);
+    expect(book.sections[0]?.text).toContain("Hello world");
+    expect(book.sections[1]?.text).toContain("Goodbye world");
   });
 
   it("strips markup, scripts and styles from chapter text", async () => {
@@ -41,7 +41,7 @@ describe("readEpub", () => {
     });
 
     const book = await readEpub(epub);
-    const text = book.chapters[0]?.text ?? "";
+    const text = book.sections[0]?.text ?? "";
     expect(text).toContain("Visible text here.");
     expect(text).not.toContain("color");
     expect(text).not.toContain("hidden");
@@ -54,7 +54,7 @@ describe("readEpub", () => {
       chapters: [{ file: "ch1.xhtml", title: "The Beginning", body: "<p>x</p>" }],
     });
     const book = await readEpub(epub);
-    expect(book.chapters[0]?.title).toBe("The Beginning");
+    expect(book.sections[0]?.title).toBe("The Beginning");
   });
 
   it("resolves chapter titles from an EPUB3 nav document", async () => {
@@ -63,7 +63,7 @@ describe("readEpub", () => {
       chapters: [{ file: "ch1.xhtml", title: "The Beginning", body: "<p>x</p>" }],
     });
     const book = await readEpub(epub);
-    expect(book.chapters[0]?.title).toBe("The Beginning");
+    expect(book.sections[0]?.title).toBe("The Beginning");
   });
 
   it("feeds the analyze pipeline end-to-end", async () => {

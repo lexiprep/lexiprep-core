@@ -2,7 +2,7 @@ import JSZip from "jszip";
 import { XMLParser } from "fast-xml-parser";
 import { parse as parseHtml } from "node-html-parser";
 import { htmlToText } from "../text/html.js";
-import type { EpubBook, EpubChapter, EpubMetadata } from "./types.js";
+import type { Book, BookInput, BookMetadata, Section } from "../types.js";
 
 const CONTAINER_PATH = "META-INF/container.xml";
 
@@ -13,19 +13,21 @@ const xml = new XMLParser({
   trimValues: true,
 });
 
-export type EpubInput = Buffer | Uint8Array | ArrayBuffer;
+/** @deprecated Use {@link BookInput}. */
+export type EpubInput = BookInput;
 
 /** fast-xml-parser produces untyped trees; this is our boundary type for them. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type XmlNode = Record<string, any>;
 
 /**
- * Parse an EPUB (2 or 3) into a normalized {@link EpubBook}: metadata plus the
- * content documents in reading order, each reduced to clean plain text.
+ * Parse an EPUB (2 or 3) into a normalized {@link Book}: metadata plus the
+ * content documents in reading order (one {@link Section} each), reduced to
+ * clean plain text.
  *
  * DRM-protected books are not supported.
  */
-export async function readEpub(input: EpubInput): Promise<EpubBook> {
+export async function readEpub(input: BookInput): Promise<Book> {
   const zip = await JSZip.loadAsync(input);
   const readFile = makeFileReader(zip);
 
@@ -48,7 +50,7 @@ export async function readEpub(input: EpubInput): Promise<EpubBook> {
 
   const titles = await resolveTitles(pkg, manifest, readFile);
 
-  const chapters: EpubChapter[] = [];
+  const sections: Section[] = [];
   let order = 0;
   for (const id of spineIds) {
     const item = manifest.get(id);
@@ -57,7 +59,7 @@ export async function readEpub(input: EpubInput): Promise<EpubBook> {
     const html = await readFile(item.href);
     if (html === null) continue;
 
-    chapters.push({
+    sections.push({
       id,
       href: item.href,
       order: order++,
@@ -66,7 +68,7 @@ export async function readEpub(input: EpubInput): Promise<EpubBook> {
     });
   }
 
-  return { metadata, chapters };
+  return { metadata, sections };
 }
 
 // --- OPF / container ---------------------------------------------------------
@@ -81,7 +83,7 @@ function findOpfPath(containerXml: string): string {
   return fullPath;
 }
 
-function readMetadata(meta: Record<string, unknown>): EpubMetadata {
+function readMetadata(meta: Record<string, unknown>): BookMetadata {
   return {
     title: firstText(meta, ["dc:title", "title"]),
     author: firstText(meta, ["dc:creator", "creator"]),

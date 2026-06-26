@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { countWords, analyzeBook } from "../src/analyze/wordCount.js";
-import type { EpubBook } from "../src/epub/types.js";
+import type { Book } from "../src/types.js";
 
 describe("countWords", () => {
   it("counts frequencies and sorts most-frequent first", () => {
@@ -99,10 +99,10 @@ describe("context examples", () => {
   });
 });
 
-function book(chapters: string[]): EpubBook {
+function book(sections: string[]): Book {
   return {
     metadata: { title: "T", author: "A", language: "en" },
-    chapters: chapters.map((text, order) => ({
+    sections: sections.map((text, order) => ({
       id: `c${order}`,
       href: `c${order}.xhtml`,
       order,
@@ -119,24 +119,24 @@ describe("analyzeBook", () => {
       { word: "cat", count: 3 },
       { word: "dog", count: 2 },
     ]);
-    expect(analysis.analyzedRange).toEqual({ fromChapter: 0, toChapter: 1 });
+    expect(analysis.analyzedRange).toEqual({ from: 0, to: 1 });
   });
 
-  it("restricts to a chapter range", () => {
+  it("restricts to a section range", () => {
     const analysis = analyzeBook(book(["alpha", "beta", "gamma"]), {
-      fromChapter: 1,
-      toChapter: 2,
+      from: 1,
+      to: 2,
     });
     expect(analysis.frequencies.map((f) => f.word)).toEqual(["beta", "gamma"]);
-    expect(analysis.analyzedRange).toEqual({ fromChapter: 1, toChapter: 2 });
+    expect(analysis.analyzedRange).toEqual({ from: 1, to: 2 });
   });
 
   it("clamps an out-of-bounds range", () => {
     const analysis = analyzeBook(book(["alpha", "beta"]), {
-      fromChapter: -5,
-      toChapter: 99,
+      from: -5,
+      to: 99,
     });
-    expect(analysis.analyzedRange).toEqual({ fromChapter: 0, toChapter: 1 });
+    expect(analysis.analyzedRange).toEqual({ from: 0, to: 1 });
     expect(analysis.uniqueWords).toBe(2);
   });
 

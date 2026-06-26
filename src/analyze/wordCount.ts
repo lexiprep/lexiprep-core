@@ -2,7 +2,7 @@ import { tokenize, tokenizeWithContext } from "../text/tokenize.js";
 import { splitSentences } from "../text/sentences.js";
 import { ENGLISH_STOPWORDS } from "../stopwords/english.js";
 import { lemmatize } from "../lemmatize/english.js";
-import type { EpubBook, EpubMetadata } from "../epub/types.js";
+import type { Book, BookMetadata } from "../types.js";
 
 /**
  * Capitalization-based proper-noun classification for a surface form:
@@ -45,22 +45,21 @@ interface CaseStats {
   lower: number;
 }
 
-export interface ChapterRange {
+export interface SectionRange {
   /**
-   * Inclusive chapter index range in spine (reading) order, 0-based. EPUB has no
-   * fixed pages, so "page" filtering is expressed over content documents — see
-   * docs/specs. Omit either bound to run to the start/end.
+   * Inclusive section-index range in reading order, 0-based — EPUB content
+   * documents or PDF pages. Omit either bound to run to the start/end.
    */
-  fromChapter?: number;
-  toChapter?: number;
+  from?: number;
+  to?: number;
 }
 
 export interface BookAnalysis {
-  metadata: EpubMetadata;
-  /** Total number of content documents in the book. */
-  chapterCount: number;
-  /** The inclusive chapter range that was actually analyzed. */
-  analyzedRange: { fromChapter: number; toChapter: number };
+  metadata: BookMetadata;
+  /** Total number of sections (EPUB content documents or PDF pages) in the book. */
+  sectionCount: number;
+  /** The inclusive section range that was actually analyzed. */
+  analyzedRange: { from: number; to: number };
   /** Total word tokens in range, before stopword/length filtering. */
   totalTokens: number;
   /** Distinct words after filtering. */
@@ -77,20 +76,21 @@ export function countWords(text: string, options: CountOptions = {}): WordFreque
 }
 
 /**
- * Analyze an EPUB into a frequency report, optionally restricted to a chapter
- * range. This is the primary entry point for the "ebook -> word list" feature.
+ * Analyze a book (EPUB or PDF) into a frequency report, optionally restricted to
+ * a section range. This is the primary entry point for the "book -> word list"
+ * feature.
  */
 export function analyzeBook(
-  book: EpubBook,
-  options: CountOptions & ChapterRange = {},
+  book: Book,
+  options: CountOptions & SectionRange = {},
 ): BookAnalysis {
-  const last = Math.max(0, book.chapters.length - 1);
-  const from = clamp(options.fromChapter ?? 0, 0, last);
-  const to = clamp(options.toChapter ?? last, from, last);
+  const last = Math.max(0, book.sections.length - 1);
+  const from = clamp(options.from ?? 0, 0, last);
+  const to = clamp(options.to ?? last, from, last);
 
-  const text = book.chapters
+  const text = book.sections
     .slice(from, to + 1)
-    .map((chapter) => chapter.text)
+    .map((section) => section.text)
     .join("\n\n");
 
   const { counts, totalTokens, properStats } = tally(text, options);
@@ -99,8 +99,8 @@ export function analyzeBook(
 
   return {
     metadata: book.metadata,
-    chapterCount: book.chapters.length,
-    analyzedRange: { fromChapter: from, toChapter: to },
+    sectionCount: book.sections.length,
+    analyzedRange: { from, to },
     totalTokens,
     uniqueWords: frequencies.length,
     frequencies,

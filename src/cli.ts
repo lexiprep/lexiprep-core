@@ -2,17 +2,18 @@
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { readEpub } from "./epub/reader.js";
+import { readPdf } from "./pdf/reader.js";
 import { analyzeBook } from "./analyze/wordCount.js";
 
-const USAGE = `lexiprep analyze — word frequencies from an EPUB
+const USAGE = `lexiprep analyze — word frequencies from an EPUB or PDF
 
 Usage:
-  lexiprep-analyze <book.epub> [options]
+  lexiprep-analyze <book.epub|book.pdf> [options]
 
 Options:
   --top <n>           Show the top N words (default 30; 0 = all)
-  --from <chapter>    First chapter index, 0-based (default 0)
-  --to <chapter>      Last chapter index, inclusive (default last)
+  --from <n>          First section index, 0-based (EPUB chapter / PDF page; default 0)
+  --to <n>            Last section index, inclusive (default last)
   --min-length <n>    Drop words shorter than N characters (default 1)
   --keep-stopwords    Keep basic function words (the, a, on, ...) in the list
   --json              Emit the full analysis as JSON
@@ -39,10 +40,12 @@ async function main(): Promise<void> {
   }
 
   const path = positionals[0]!;
-  const book = await readEpub(await readFile(path));
+  const isPdf = path.toLowerCase().endsWith(".pdf");
+  const bytes = await readFile(path);
+  const book = isPdf ? await readPdf(bytes) : await readEpub(bytes);
   const analysis = analyzeBook(book, {
-    fromChapter: intOpt(values.from),
-    toChapter: intOpt(values.to),
+    from: intOpt(values.from),
+    to: intOpt(values.to),
     minLength: intOpt(values["min-length"]) ?? 1,
     excludeStopwords: !values["keep-stopwords"],
   });
@@ -53,15 +56,16 @@ async function main(): Promise<void> {
   }
 
   const top = intOpt(values.top) ?? 30;
-  printReport(analysis, top, path);
+  printReport(analysis, top, path, isPdf ? "pages" : "chapters");
 }
 
 function printReport(
   analysis: ReturnType<typeof analyzeBook>,
   top: number,
   path: string,
+  unit: string,
 ): void {
-  const { metadata, chapterCount, analyzedRange, totalTokens, uniqueWords, frequencies } =
+  const { metadata, sectionCount, analyzedRange, totalTokens, uniqueWords, frequencies } =
     analysis;
 
   const lines: string[] = [];
@@ -70,8 +74,8 @@ function printReport(
   if (metadata.author) lines.push(`  by ${metadata.author}`);
   const lang = metadata.language ? `  ·  ${metadata.language}` : "";
   lines.push(
-    `  ${chapterCount} chapters` +
-      `  ·  analyzed ${analyzedRange.fromChapter}–${analyzedRange.toChapter}` +
+    `  ${sectionCount} ${unit}` +
+      `  ·  analyzed ${analyzedRange.from}–${analyzedRange.to}` +
       lang,
   );
   lines.push(
