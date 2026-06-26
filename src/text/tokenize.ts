@@ -2,14 +2,20 @@
  * Word tokenization for space-delimited languages (English now, Spanish later).
  *
  * A token is a run of letters (any script, so accented Spanish letters work)
- * that may contain internal apostrophes or hyphens — keeping "don't",
- * "O'Brien" and "co-operate" whole — but never leading/trailing punctuation or
- * digits. Curly apostrophes are unified with straight ones so "don't" and
- * "don't" count as the same word.
+ * that may contain internal apostrophes — keeping "don't" and "O'Brien" whole —
+ * but never leading/trailing punctuation or digits. Curly apostrophes are
+ * unified with straight ones so "don't" and "don't" count as the same word.
+ *
+ * Hyphens are word boundaries, not part of the word: "wine-dark" → "wine" +
+ * "dark", "well-known" → "well" + "known". In books most hyphenated forms are
+ * translator compounds ("rosy-fingered", "bright-eyed") or pronunciation
+ * respellings — noise as whole tokens, while their parts are real, learnable,
+ * level-tagged words. A few genuine compound lexemes ("son-in-law") lose their
+ * unit, but their parts stay individually useful.
  */
 
-// A letter, then any letters / combining marks / apostrophes / hyphens.
-const WORD_RE = /\p{L}[\p{L}\p{M}'’\-]*/gu;
+// A letter, then any letters / combining marks / apostrophes (hyphens split words).
+const WORD_RE = /\p{L}[\p{L}\p{M}'’]*/gu;
 
 /**
  * Lowercase, unify curly apostrophes, drop a trailing possessive/contraction `'s`,

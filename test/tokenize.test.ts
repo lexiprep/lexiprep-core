@@ -35,12 +35,33 @@ describe("tokenize", () => {
     expect(tokenize("Don't, it’s O'Brien!")).toEqual(["don't", "it", "o'brien"]);
   });
 
-  it("keeps hyphenated words whole", () => {
+  it("splits hyphenated words into their parts", () => {
     expect(tokenize("a well-known co-operate test")).toEqual([
       "a",
-      "well-known",
-      "co-operate",
+      "well",
+      "known",
+      "co",
+      "operate",
       "test",
+    ]);
+    // Translator compounds / epithets break into real, level-tagged words.
+    expect(tokenize("the wine-dark sea, bright-eyed Athena")).toEqual([
+      "the",
+      "wine",
+      "dark",
+      "sea",
+      "bright",
+      "eyed",
+      "athena",
+    ]);
+    // Multi-hyphen compounds split fully; an apostrophe inside a part is kept.
+    expect(tokenize("ne'er-do-well son-in-law")).toEqual([
+      "ne'er",
+      "do",
+      "well",
+      "son",
+      "in",
+      "law",
     ]);
   });
 
