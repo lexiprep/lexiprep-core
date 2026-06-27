@@ -79,9 +79,16 @@ describe("context examples", () => {
     countWords(text, { captureExamples: true }).find((f) => f.word === word);
 
   it("attaches the first-occurrence sentence to every word", () => {
-    const text = "The hero sailed home. The storm broke the mast.";
-    expect(find(text, "sailed")?.example).toBe("The hero sailed home.");
-    expect(find(text, "mast")?.example).toBe("The storm broke the mast.");
+    const text = "The weary hero finally sailed back to his home. A sudden violent storm soon broke the wooden mast.";
+    expect(find(text, "sailed")?.example).toBe("The weary hero finally sailed back to his home.");
+    expect(find(text, "mast")?.example).toBe("A sudden violent storm soon broke the wooden mast.");
+  });
+
+  it("gives a full-phrase example across verse line breaks (commas don't cut it)", () => {
+    const text = "Athena poured unearthly charm,\nacross his face and shoulders.";
+    expect(find(text, "charm")?.example).toBe(
+      "Athena poured unearthly charm, across his face and shoulders.",
+    );
   });
 
   it("gives a context match to every counted word (the hard requirement)", () => {

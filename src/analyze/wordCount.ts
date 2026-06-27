@@ -168,10 +168,17 @@ function tallyToFrequencies(
 }
 
 /**
+ * A context sentence with fewer than this many words is padded with its neighbours.
+ * Set generously: understanding how a word is used matters more than a tight snippet,
+ * so a short line ("Silence.", a clipped verse line) pulls in the sentences around it.
+ */
+const MIN_CONTEXT_WORDS = 6;
+
+/**
  * One context sentence per surface form — its first occurrence. Every counted word
  * comes from the text, so each gets a snippet (a context match is always available).
- * If the first-occurrence sentence is very short (<4 words), it's padded with the
- * neighbouring sentences so the snippet carries real context (spec 03).
+ * If the first-occurrence sentence is short (<{@link MIN_CONTEXT_WORDS} words), it's
+ * padded with the neighbouring sentences so the snippet carries real context (spec 03).
  */
 function captureExamples(text: string): Map<string, string> {
   const examples = new Map<string, string>();
@@ -184,7 +191,7 @@ function captureExamples(text: string): Map<string, string> {
       if (examples.has(word)) continue;
       if (snippet === undefined) {
         snippet =
-          words.length < 4
+          words.length < MIN_CONTEXT_WORDS
             ? [sentences[i - 1], sentences[i]!, sentences[i + 1]]
                 .filter((s): s is string => Boolean(s))
                 .join(" ")
