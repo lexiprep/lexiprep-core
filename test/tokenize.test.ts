@@ -37,7 +37,6 @@ describe("tokenize", () => {
 
   it("splits hyphenated words into their parts", () => {
     expect(tokenize("a well-known co-operate test")).toEqual([
-      "a",
       "well",
       "known",
       "co",
@@ -66,7 +65,14 @@ describe("tokenize", () => {
   });
 
   it("drops digits and standalone numbers", () => {
-    expect(tokenize("I read 3 books in 2024")).toEqual(["i", "read", "books", "in"]);
+    expect(tokenize("I read 3 books in 2024")).toEqual(["read", "books", "in"]);
+  });
+
+  it("drops single-character tokens (a, I, stray letters)", () => {
+    expect(tokenize("I have a dog")).toEqual(["have", "dog"]);
+    // OCR/list debris: lone letters and split-off clitics are not words.
+    expect(tokenize("x y go z")).toEqual(["go"]);
+    expect(tokenize("a")).toEqual([]);
   });
 
   it("handles accented letters (Spanish-ready)", () => {

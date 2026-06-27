@@ -30,6 +30,11 @@ describe("countWords", () => {
     const result = countWords("a ab abc abcd", { minLength: 3 });
     expect(result.map((f) => f.word)).toEqual(["abc", "abcd"]);
   });
+
+  it("never counts single-character tokens", () => {
+    const result = countWords("I a x cat cat o");
+    expect(result).toEqual([{ word: "cat", count: 2 }]);
+  });
 });
 
 describe("proper-noun detection", () => {

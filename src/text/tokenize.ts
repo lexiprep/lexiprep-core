@@ -12,6 +12,11 @@
  * respellings — noise as whole tokens, while their parts are real, learnable,
  * level-tagged words. A few genuine compound lexemes ("son-in-law") lose their
  * unit, but their parts stay individually useful.
+ *
+ * Single-character tokens are dropped: "a"/"I" and stray letters left by OCR,
+ * list bullets, or split contractions aren't words worth tracking. This is a
+ * tokenizer-level rule, so every consumer (frequencies, examples, proper-noun
+ * stats, the token count) sees it uniformly.
  */
 
 // A letter, then any letters / combining marks / apostrophes (hyphens split words).
@@ -33,12 +38,12 @@ export function normalizeWord(raw: string): string {
     .replace(/^['-]+|['-]+$/g, "");
 }
 
-/** Split text into a flat list of normalized word tokens. */
+/** Split text into a flat list of normalized word tokens (single chars dropped). */
 export function tokenize(text: string): string[] {
   const out: string[] = [];
   for (const match of text.matchAll(WORD_RE)) {
     const word = normalizeWord(match[0]);
-    if (word.length > 0) out.push(word);
+    if (word.length > 1) out.push(word);
   }
   return out;
 }
@@ -66,7 +71,13 @@ export function* tokenizeWithContext(text: string): Generator<TokenContext> {
     if (/[.!?\n]/.test(gap)) sentenceInitial = true;
     lastEnd = (match.index ?? 0) + match[0].length;
     const word = normalizeWord(match[0]);
-    if (word.length === 0) continue;
+    // Single-char tokens aren't words, but they still occupy a sentence position,
+    // so the following token is no longer sentence-initial (keeps proper-noun
+    // capitalization evidence correct after a dropped "I"/"a").
+    if (word.length <= 1) {
+      sentenceInitial = false;
+      continue;
+    }
     yield { raw: match[0], word, sentenceInitial };
     sentenceInitial = false;
   }
