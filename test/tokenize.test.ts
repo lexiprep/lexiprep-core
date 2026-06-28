@@ -75,6 +75,27 @@ describe("tokenize", () => {
     expect(tokenize("a")).toEqual([]);
   });
 
+  it("drops Roman numerals (chapter/section numbering)", () => {
+    expect(tokenize("Chapter II the journey")).toEqual(["chapter", "the", "journey"]);
+    expect(tokenize("ii iii iv vii ix xi xii xiv")).toEqual([]);
+    expect(tokenize("Book MMXXIV part xlii")).toEqual(["book", "part"]);
+  });
+
+  it("keeps real words built from Roman-numeral letters", () => {
+    // None of these parse as a valid numeral, so they survive.
+    expect(tokenize("mid dim lid mild civic mill dill")).toEqual([
+      "mid",
+      "dim",
+      "lid",
+      "mild",
+      "civic",
+      "mill",
+      "dill",
+    ]);
+    // "mix" IS a valid numeral (1009) but a common word — allow-listed.
+    expect(tokenize("mix the dough")).toEqual(["mix", "the", "dough"]);
+  });
+
   it("handles accented letters (Spanish-ready)", () => {
     expect(tokenize("el niño corrió rápido")).toEqual(["el", "niño", "corrió", "rápido"]);
   });

@@ -17,10 +17,28 @@
  * list bullets, or split contractions aren't words worth tracking. This is a
  * tokenizer-level rule, so every consumer (frequencies, examples, proper-noun
  * stats, the token count) sees it uniformly.
+ *
+ * Roman numerals are dropped too: chapter/section numbering ("II", "xiv",
+ * "MMXXIV") is noise as vocabulary. We drop a token only when it parses as a
+ * *valid* numeral, which is what keeps real words — "mid", "dim", "lid",
+ * "mild", "civic" are built from Roman letters but don't parse, so they survive.
+ * The lone genuine collision is "mix" (= MIX = 1009); it plus a few
+ * abbreviations are allow-listed so they're never dropped.
  */
 
 // A letter, then any letters / combining marks / apostrophes (hyphens split words).
 const WORD_RE = /\p{L}[\p{L}\p{M}'’]*/gu;
+
+// A whole, well-formed Roman numeral (1–3999), lowercase to match normalized tokens.
+const ROMAN_RE = /^m{0,3}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$/;
+// Valid numerals that are also real English words / common abbreviations: keep them.
+// "mix" (1009) is the only everyday word; cd/cv/mi/vi are abbreviations or rare.
+const ROMAN_KEEP = new Set(["mix", "cd", "cv", "mi", "vi"]);
+
+/** True for a token that is a stray Roman numeral (chapter/section number), not a word. */
+function isRomanNumeral(word: string): boolean {
+  return word.length > 0 && ROMAN_RE.test(word) && !ROMAN_KEEP.has(word);
+}
 
 /**
  * Lowercase, unify curly apostrophes, drop a trailing possessive/contraction `'s`,
@@ -43,7 +61,7 @@ export function tokenize(text: string): string[] {
   const out: string[] = [];
   for (const match of text.matchAll(WORD_RE)) {
     const word = normalizeWord(match[0]);
-    if (word.length > 1) out.push(word);
+    if (word.length > 1 && !isRomanNumeral(word)) out.push(word);
   }
   return out;
 }
@@ -71,10 +89,10 @@ export function* tokenizeWithContext(text: string): Generator<TokenContext> {
     if (/[.!?\n]/.test(gap)) sentenceInitial = true;
     lastEnd = (match.index ?? 0) + match[0].length;
     const word = normalizeWord(match[0]);
-    // Single-char tokens aren't words, but they still occupy a sentence position,
-    // so the following token is no longer sentence-initial (keeps proper-noun
-    // capitalization evidence correct after a dropped "I"/"a").
-    if (word.length <= 1) {
+    // Single-char tokens and Roman numerals aren't words, but they still occupy a
+    // sentence position, so the following token is no longer sentence-initial (keeps
+    // proper-noun capitalization evidence correct after a dropped "I"/"a"/"II").
+    if (word.length <= 1 || isRomanNumeral(word)) {
       sentenceInitial = false;
       continue;
     }
